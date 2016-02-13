@@ -1,4 +1,4 @@
-from .peg_parser import parse_tag
+from pypug.peg_parser import parse_tag, parse_code
 
 
 def test_parse_tag():
@@ -46,3 +46,17 @@ def test_parse_tag():
     assert f.classes == ['cls1', 'cls2']
     assert f.id == 'id1'
     assert len(f.args) == 0
+
+
+def test_parse_code():
+    f = parse_code("alpha = 'bravo'")
+    assert f.__class__.__name__ == 'Assignment'
+    assert f.left == 'alpha'
+    assert f.right == '\'bravo\''
+    assert str(f) == '''assign(alpha, 'bravo')'''
+
+    f = parse_code("for i in 10:")
+    assert f.__class__.__name__ == 'ForLoop'
+    assert f.var == 'i'
+    assert f.iterator == '10'
+    assert str(f) == '''forloop(i, 10)'''

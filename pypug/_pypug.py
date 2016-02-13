@@ -1,5 +1,8 @@
 from pypug import peg_parser
 from reraiseit import reraise
+from zerotk.tag import create_tag
+from ast import literal_eval
+
 
 
 class LineToken(object):
@@ -59,8 +62,8 @@ class PugParser(object):
 
     def tokenize(self, text):
 
-        def preprocess_text(text):
-            return text.replace('\t', '    ').replace('\r', '')
+        def preprocess_text(txt):
+            return txt.replace('\t', '    ').replace('\r', '')
 
         context = self.ParseContext()
         text = preprocess_text(text)
@@ -108,22 +111,26 @@ class HtmlGenerator(object):
             LineToken.LINE_TYPE_COMMENT: self.handle_comment,
             LineToken.LINE_TYPE_CODE: self.handle_code,
             LineToken.LINE_TYPE_DJANGO: self.handle_django,
-            LineToken.LINE_TYPE_COMMENT: self.handle_comment,
             LineToken.LINE_TYPE_TAG: self.handle_tag,
         }
+        # Code variables (for now, later it will be more complex... with IFs and FORs and expand_vars...
+        self.context = {}
 
     def handle_root(self, token, after=False):
         return []
 
-    def handle_comment(self, token, after=False):
-        if after:
-            return []
-        return [repr(token)]
-
     def handle_code(self, token, after=False):
         if after:
             return []
-        return ['(CODE)' + repr(token)]
+
+        code = peg_parser.parse_code(token.line)
+
+        if code.__class__.__name__ == 'Assignment':
+            self.context[str(code.left)] = literal_eval(code.right)
+        elif code.__class__.__name__ == 'ForLoop':
+            return [token.indentation + repr(code)]
+
+        return []
 
     def handle_django(self, token, after=False):
         if after:
@@ -136,13 +143,17 @@ class HtmlGenerator(object):
         return [repr(token)]
 
     def handle_tag(self, token, after=False):
-        from zerotk.tag import create_tag
+
+        def get_content(tag):
+            result = literal_eval(tag.content)
+            return result.format(**self.context)
 
         # Parses the TAG line, extracting the id, classes, arguments and the contents.
         try:
             tag = peg_parser.parse_tag(token.line)
         except Exception as e:
             reraise(e, 'While parsing tag in line %d' % token.line_no)
+            raise
 
         result = []
 
@@ -171,7 +182,8 @@ class HtmlGenerator(object):
             if have_content:
                 # With content, close the tag in the same line.
                 end_tag = '</{}>'.format(tag.name)
-                line += tag.content + end_tag
+                content = get_content(tag)
+                line += content + end_tag
 
             result.append(line)
 
@@ -179,13 +191,13 @@ class HtmlGenerator(object):
 
     def generate(self, line_token):
 
-        def _handle(result, t):
+        def _handle(lines, t):
             handler = self.HANDLERS.get(t.line_type)
             assert handler is not None, 'No handler for token of type "{}"'.format(t.line_type)
-            result += handler(t, after=False)
+            lines += handler(t, after=False)
             for i_child in t.children:
-                _handle(result, i_child)
-            result += handler(t, after=True)
+                _handle(lines, i_child)
+            lines += handler(t, after=True)
 
         result = []
         _handle(result, line_token)

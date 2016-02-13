@@ -1,53 +1,19 @@
+import pytest
+from easyfs import CreateFile, GetFileContents
 
 
-def test_parser():
-    """
-        html
-            head
-                script(language='text/javascript')
-            body.content#body
-                h1 Title
-                p First paragraph.
-                p Second paragraph.
-                -name = 'Alpha'
-                -for i in range(10):
-                    i 'item {}'.format(i)
-                div1.classy
-                    div11
-                        p
-                div2
-                    p
-                h6 'Footer declaration.'
-    """
-    from .pypug import PugParser, HtmlGenerator
-    from zerotk.text import dedent
+@pytest.mark.parametrize('basename', ['smoke_test'])
+def test_parser(embed_data, basename):
+    input_filename = embed_data[basename + '.lang']
+    output_filename = embed_data[basename + '.html']
+    CreateFile(output_filename, generate(input_filename))
+
+
+def generate(filename):
+    from ._pypug import PugParser, HtmlGenerator
 
     parser = PugParser()
-    token_tree = parser.tokenize(dedent(test_parser.__doc__))
+    input_contents = GetFileContents(filename)
+    token_tree = parser.tokenize(input_contents)
     generator = HtmlGenerator()
-    assert generator.generate(token_tree) == dedent(
-        '''
-            <html>
-                <head>
-                    <script language='text/javascript' />
-                </head>
-                <body class="content" id="body">
-                    <h1>Title</h1>
-                    <p>First paragraph.</p>
-                    <p>Second paragraph.</p>
-            (CODE)<LineToken:CODE name = 'Alpha'>
-            (CODE)<LineToken:CODE for i in range(10):>
-                        <i>'item {}'.format(i)</i>
-                    <div1 class="classy">
-                        <div11>
-                            <p />
-                        </div11>
-                    </div1>
-                    <div2>
-                        <p />
-                    </div2>
-                    <h6>'Footer declaration.'</h6>
-                </body>
-            </html>
-        '''
-    )
+    return generator.generate(token_tree)

@@ -7,7 +7,7 @@ literal = re.compile(r"'((?:[^'\\]|\\')*)'")
 
 
 class KeywordArgument(object):
-    grammar = attr('key', Symbol), optional("=", attr('value', [number, symbol, literal]))
+    grammar = attr('key', Symbol), optional('=', attr('value', [number, symbol, literal]))
 
 
 class Arguments(List):
@@ -20,7 +20,7 @@ class Tag(List):
         name(),
         attr('classes', maybe_some(('.', word))),
         attr('id', optional(('#', word))),
-        optional('(', attr("args", Arguments), ')'),
+        optional('(', attr('args', Arguments), ')'),
         attr('content', restline),
         endl
     )
@@ -36,6 +36,25 @@ class Tag(List):
         return result
 
 
+class Assignment(object):
+    grammar = 'var', attr('left', Symbol), '=', attr('right', [Symbol, literal])
+
+    def __repr__(self):
+        return 'assign({}, {})'.format(self.left, self.right)
+
+
+class ForLoop(object):
+    grammar = 'for', attr('var', Symbol), 'in', attr('iterator', Symbol), ':'
+
+    def __repr__(self):
+        return 'forloop({}, {})'.format(self.var, self.iterator)
+
+
 def parse_tag(text):
     result = parse(text, Tag)
+    return result
+
+
+def parse_code(text):
+    result = parse(text, [ForLoop, Assignment])
     return result

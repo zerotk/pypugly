@@ -1,0 +1,14 @@
+html
+    head
+        script(language='text/javascript')
+    body.content#body
+        h1 'Title'
+        p 'First paragraph.'
+        -var name = 'Alpha'
+        p 'My name is {name}'
+        div1.classy
+            div11
+                p
+        div2
+            p
+        h6 'Footer declaration.'
