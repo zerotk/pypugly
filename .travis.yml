@@ -1,0 +1,14 @@
+language: python
+
+sudo: false
+
+python:
+- 2.7
+- 3.5
+
+script:
+- python setup.py develop
+- coverage run setup.py test
+
+after_success:
+- coveralls
