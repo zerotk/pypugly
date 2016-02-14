@@ -1,13 +1,11 @@
-# PyPUG (temporary name) [![Build Status](https://travis-ci.org/kaniabi/pypug.svg)](https://travis-ci.org/kaniabi/pypug)
+# PyPUGly (temporary name) [![Build Status](https://travis-ci.org/zerotk/pypugly.svg)](https://travis-ci.org/zerotk/pypugly)
 
-PuPUG is an experiment to create the "perfect" HTML generation language and learn a little bit more about compilers.
-
-The name is temporary... maybe PyPUGly?
+PuPUGly is an experiment to create the "perfect" HTML generation language and learn a little bit more about compilers.
 
 
 ## Syntax
 
-I'm inspiring the syntax on PUG (aka JADE) until I'm not. I'm trying to make the language more consistent than JADE.
+The syntax is inspired on PUG (aka JADE) until it is not. I'm trying to make the language more consistent (from my point of view).
 
 ```
 # Comments with '#'
