@@ -17,10 +17,12 @@ class LineToken(object):
     LINE_TYPE_CODE = 'CODE'
     LINE_TYPE_DJANGO = 'DJANGO'
     LINE_TYPE_COMMENT = 'COMMENT'
+    LINE_TYPE_CALL = 'CALL'
     _LINE_TYPE_VALIDS = {
         '-': LINE_TYPE_CODE,
         '%': LINE_TYPE_DJANGO,
         '#': LINE_TYPE_COMMENT,
+        '+': LINE_TYPE_CALL,
     }
 
     def __init__(self, line):
@@ -103,6 +105,32 @@ class PugParser(object):
             self.current_indent = token.indent
 
 
+class Function(object):
+
+    def __init__(self, name, parameters, code):
+        self.name = name
+        self.parameters = parameters
+        self.code = code
+
+    def format_arguments(self, arguments):
+        """
+        Returns a dictionary with the arguments. Obtain missing arguments names from the function parameter definition.
+
+        :return dict(str, object):
+        """
+        result = {}
+        for i_parameter, i_argument in zip(self.parameters, arguments):
+            if isinstance(i_argument, tuple) and len(i_argument) == 2:
+                key = i_argument[0]
+                value = i_argument[1]
+            else:
+                key = i_parameter[0]
+                value = i_argument or i_parameter[1]
+            value = literal_eval(value)
+            result[key] = value
+        return result
+
+
 class HtmlGenerator(object):
 
     def __init__(self):
@@ -112,41 +140,75 @@ class HtmlGenerator(object):
             LineToken.LINE_TYPE_CODE: self.handle_code,
             LineToken.LINE_TYPE_DJANGO: self.handle_django,
             LineToken.LINE_TYPE_TAG: self.handle_tag,
+            LineToken.LINE_TYPE_CALL: self.handle_call,
         }
         # Code variables (for now, later it will be more complex... with IFs and FORs and expand_vars...
-        self.context = {}
+        self.functions = {}
+        self.variables = {}
 
-    def handle_root(self, token, after=False):
+    def handle_root(self, token, after, context):
         return []
 
-    def handle_code(self, token, after=False):
+    def handle_code(self, token, after, context):
         if after:
             return []
 
         code = peg_parser.parse_code(token.line)
+        code_class = code.__class__.__name__
 
-        if code.__class__.__name__ == 'Assignment':
-            self.context[str(code.left)] = literal_eval(code.right)
-        elif code.__class__.__name__ == 'ForLoop':
+        if code_class == 'Assignment':
+            self.variables[str(code.left)] = literal_eval(code.right)
+        elif code_class == 'Def':
+            self.functions[str(code.name)] = Function(code.name, code.parameters, token.children)
+            token.children = []
+            return []
+        elif code_class == 'ForLoop':
             return [token.indentation + repr(code)]
 
         return []
 
-    def handle_django(self, token, after=False):
+    def handle_call(self, token, after, context):
+        if after:
+            return []
+
+        # Parse function call...
+        code = peg_parser.parse_call(token.line)
+
+        # Obtain the associated function
+        function = self.functions.get(str(code.name))
+        assert function is not None
+
+        # Prepare arguments
+        arguments = function.format_arguments(code.arguments)
+
+        # Prepare context for the function call, adding the global variables and argument values
+        context = self.variables
+        context.update(arguments)
+
+        # Call the function 'code'
+        tokens = function.code[:]
+
+        # Replaces the code indent with the function call indent.
+        for i in tokens:
+            i.indent -= 1
+
+        return self._handle_children(tokens, context=context)
+
+    def handle_django(self, token, after, context):
         if after:
             return []
         return ['(DJANGO)' + repr(token)]
 
-    def handle_comment(self, token, after=False):
+    def handle_comment(self, token, after, context):
         if after:
             return []
         return [repr(token)]
 
-    def handle_tag(self, token, after=False):
+    def handle_tag(self, token, after, context):
 
         def get_content(tag):
             result = literal_eval(tag.content)
-            return result.format(**self.context)
+            return result.format(**self.variables)
 
         # Parses the TAG line, extracting the id, classes, arguments and the contents.
         try:
@@ -190,16 +252,20 @@ class HtmlGenerator(object):
         return result
 
     def generate(self, line_token):
+        lines = self._handle_line_token(line_token, self.variables)
+        return '\n'.join(lines)
 
-        def _handle(lines, t):
-            handler = self.HANDLERS.get(t.line_type)
-            assert handler is not None, 'No handler for token of type "{}"'.format(t.line_type)
-            lines += handler(t, after=False)
-            for i_child in t.children:
-                _handle(lines, i_child)
-            lines += handler(t, after=True)
+    def _handle_line_token(self, t, context):
+        handler = self.HANDLERS.get(t.line_type)
+        assert handler is not None, 'No handler for token of type "{}"'.format(t.line_type)
 
+        result = handler(t, after=False, context=context)
+        result += self._handle_children(t.children, context=context)
+        result += handler(t, after=True, context=context)
+        return result
+
+    def _handle_children(self, children, context):
         result = []
-        _handle(result, line_token)
-
-        return '\n'.join(result)
+        for i_child in children:
+            result += self._handle_line_token(i_child, context=context)
+        return result

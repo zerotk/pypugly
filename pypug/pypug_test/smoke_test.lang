@@ -4,8 +4,6 @@ html
     body.content#body
         h1 'Title'
         p 'First paragraph.'
-        -var name = 'Alpha'
-        p 'My name is {name}'
         div1.classy
             div11
                 p

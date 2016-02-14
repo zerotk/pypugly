@@ -1,3 +1,4 @@
 pytest
 pypeg2
 reraiseit
+easyfs

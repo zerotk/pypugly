@@ -1,0 +1,11 @@
+-def shortcut(name, age)
+    p 'My {title} is {name} and I\'m {age} years old.'
+
+-var title = 'name'
++shortcut('Alpha', 1)
++shortcut(name='Bravo', age=2)
+
+-var title = 'TITLE'
++shortcut('Charlie', 3)
+
++shortcut(age=4, name='Delta')

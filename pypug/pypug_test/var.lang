@@ -1,0 +1,2 @@
+-var name = 'Alpha'
+p 'My name is {name}'

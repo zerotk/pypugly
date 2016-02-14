@@ -2,11 +2,13 @@ import pytest
 from easyfs import CreateFile, GetFileContents
 
 
-@pytest.mark.parametrize('basename', ['smoke_test'])
+@pytest.mark.parametrize('basename', ['smoke_test', 'var', 'def'])
 def test_parser(embed_data, basename):
     input_filename = embed_data[basename + '.lang']
-    output_filename = embed_data[basename + '.html']
-    CreateFile(output_filename, generate(input_filename))
+    obtained_filename = embed_data[basename + '.obtained.html']
+    expected_filename = embed_data[basename + '.html']
+    CreateFile(obtained_filename, generate(input_filename))
+    embed_data.assert_equal_files(obtained_filename, expected_filename)
 
 
 def generate(filename):

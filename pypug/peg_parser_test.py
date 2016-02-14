@@ -1,4 +1,4 @@
-from pypug.peg_parser import parse_tag, parse_code
+from pypug.peg_parser import parse_tag, parse_code, parse_call
 
 
 def test_parse_tag():
@@ -49,7 +49,7 @@ def test_parse_tag():
 
 
 def test_parse_code():
-    f = parse_code("alpha = 'bravo'")
+    f = parse_code("var alpha = 'bravo'")
     assert f.__class__.__name__ == 'Assignment'
     assert f.left == 'alpha'
     assert f.right == '\'bravo\''
@@ -60,3 +60,25 @@ def test_parse_code():
     assert f.var == 'i'
     assert f.iterator == '10'
     assert str(f) == '''forloop(i, 10)'''
+
+    f = parse_code("def alpha(bravo, charlie)")
+    assert f.__class__.__name__ == 'Def'
+    assert f.name == 'alpha'
+    assert f.parameters == [('bravo', None), ('charlie', None)]
+
+
+def test_parse_call():
+    f = parse_call("function(alpha, bravo, charlie)")
+    assert f.__class__.__name__ == 'Call'
+    assert f.name == 'function'
+    assert f.arguments == ['alpha', 'bravo', 'charlie']
+
+    f = parse_call("function('Alpha', 1)")
+    assert f.__class__.__name__ == 'Call'
+    assert f.name == 'function'
+    assert f.arguments == ["'Alpha'", '1']
+
+    f = parse_call("function(1, bravo=2, charlie=3)")
+    assert f.__class__.__name__ == 'Call'
+    assert f.name == 'function'
+    assert f.arguments == ['1', ('bravo', '2'), ('charlie', '3')]

@@ -3,15 +3,81 @@ from pypeg2 import *
 
 number = re.compile(r"\d+")
 symbol = re.compile(r"\w+")
-literal = re.compile(r"'((?:[^'\\]|\\')*)'")
+single_quote_string = re.compile(r"'((?:[^'\\]|\\')*)'")
 
 
-class KeywordArgument(object):
-    grammar = attr('key', Symbol), optional('=', attr('value', [number, symbol, literal]))
+class Argument(object):
+    grammar = attr('key', Symbol), optional('=', attr('value', [number, symbol, single_quote_string]))
 
 
 class Arguments(List):
-    grammar = optional(csl([KeywordArgument]))
+    grammar = optional(csl([Argument]))
+
+
+class Parameter(object):
+    grammar = attr('key', Symbol), optional('=', attr('value', [number, symbol, single_quote_string]))
+
+
+class Parameters(List):
+    grammar = optional(csl([Parameter]))
+
+
+class Assignment(object):
+    grammar = 'var', attr('left', Symbol), '=', attr('right', [Symbol, single_quote_string])
+
+    def __repr__(self):
+        return 'assign({}, {})'.format(self.left, self.right)
+
+
+class ForLoop(object):
+    grammar = 'for', attr('var', Symbol), 'in', attr('iterator', Symbol), ':'
+
+    def __repr__(self):
+        return 'forloop({}, {})'.format(self.var, self.iterator)
+
+
+class Def(object):
+    grammar = 'def', name(), '(', attr('_parameters', Parameters), ')'
+
+    @property
+    def parameters(self):
+        return [(i.key.name, getattr(i, 'value', None)) for i in self._parameters]
+
+
+
+class CallArgument(object):
+    grammar = attr(
+        'value',
+        [
+            single_quote_string,
+            number,
+            (
+                symbol,
+                optional('=', [number, symbol, single_quote_string])
+            )
+        ]
+    )
+
+
+class CallArguments(List):
+    grammar = optional(csl([CallArgument]))
+
+
+class Call(object):
+    grammar = name(), '(', attr('_arguments', CallArguments), ')'
+
+    @property
+    def arguments(self):
+        result = []
+        for i in self._arguments:
+            value = i.value
+            if isinstance(value, list):
+                if len(value) == 1:
+                    value = value[0]
+                else:
+                    value = tuple(value)
+            result.append(value)
+        return result
 
 
 class Tag(List):
@@ -36,25 +102,16 @@ class Tag(List):
         return result
 
 
-class Assignment(object):
-    grammar = 'var', attr('left', Symbol), '=', attr('right', [Symbol, literal])
-
-    def __repr__(self):
-        return 'assign({}, {})'.format(self.left, self.right)
-
-
-class ForLoop(object):
-    grammar = 'for', attr('var', Symbol), 'in', attr('iterator', Symbol), ':'
-
-    def __repr__(self):
-        return 'forloop({}, {})'.format(self.var, self.iterator)
-
-
 def parse_tag(text):
     result = parse(text, Tag)
     return result
 
 
 def parse_code(text):
-    result = parse(text, [ForLoop, Assignment])
+    result = parse(text, [Def, ForLoop, Assignment])
+    return result
+
+
+def parse_call(text):
+    result = parse(text, Call)
     return result
