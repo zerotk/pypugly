@@ -1,3 +1,4 @@
+from __future__ import unicode_literals, print_function
 from pypug.peg_parser import parse_tag, parse_code, parse_call
 
 

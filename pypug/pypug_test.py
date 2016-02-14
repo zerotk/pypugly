@@ -1,3 +1,4 @@
+from __future__ import unicode_literals, print_function
 import pytest
 from easyfs import CreateFile, GetFileContents
 
