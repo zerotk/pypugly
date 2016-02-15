@@ -196,9 +196,19 @@ class HtmlGenerator(object):
         return self._handle_children(tokens, context=context)
 
     def handle_django(self, token, after, context):
+
         if after:
-            return []
-        return ['(DJANGO)' + repr(token)]
+            if not token.children:
+                return []
+            code = peg_parser.parse_django(token.line)
+            end_tag = code.name
+            end_tag = '{% end' + end_tag.strip() + ' %}'
+            return [token.indentation + end_tag]
+        else:
+            code = peg_parser.parse_django(token.line)
+            start_tag = code.name + ' ' + code.restline
+            start_tag = '{% ' + start_tag.strip() + ' %}'
+            return [token.indentation + start_tag]
 
     def handle_comment(self, token, after, context):
         if after:

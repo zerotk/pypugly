@@ -3,7 +3,7 @@ import pytest
 from easyfs import CreateFile, GetFileContents
 
 
-@pytest.mark.parametrize('basename', ['smoke_test', 'var', 'def'])
+@pytest.mark.parametrize('basename', ['smoke_test', 'var', 'def', 'django'])
 def test_parser(embed_data, basename):
     input_filename = embed_data[basename + '.lang']
     obtained_filename = embed_data[basename + '.obtained.html']

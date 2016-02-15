@@ -1,5 +1,5 @@
 from __future__ import unicode_literals, print_function
-from pypug.peg_parser import parse_tag, parse_code, parse_call
+from pypug.peg_parser import parse_tag, parse_code, parse_call, parse_django
 
 
 def test_parse_tag():
@@ -83,3 +83,15 @@ def test_parse_call():
     assert f.__class__.__name__ == 'Call'
     assert f.name == 'function'
     assert f.arguments == ['1', ('bravo', '2'), ('charlie', '3')]
+
+
+def test_parse_django():
+    f = parse_django("include alpha.html")
+    assert f.__class__.__name__ == 'Django'
+    assert f.name == 'include'
+    assert f.restline == 'alpha.html'
+
+    f = parse_django("include alpha.html bravo charlie.html delta=object.pk")
+    assert f.__class__.__name__ == 'Django'
+    assert f.name == 'include'
+    assert f.restline == 'alpha.html bravo charlie.html delta=object.pk'

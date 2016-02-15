@@ -103,6 +103,10 @@ class Tag(List):
         return result
 
 
+class Django(str):
+    grammar = name(), attr('restline', restline)
+
+
 def parse_tag(text):
     result = parse(text, Tag)
     return result
@@ -115,4 +119,9 @@ def parse_code(text):
 
 def parse_call(text):
     result = parse(text, Call)
+    return result
+
+
+def parse_django(text):
+    result = parse(text, Django)
     return result
