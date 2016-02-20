@@ -19,18 +19,18 @@ class PyTest(TestCommand):
 
     def run_tests(self):
         import pytest
-        errno = pytest.main(['pypug'] + self.pytest_args)
+        errno = pytest.main(['pypugly'] + self.pytest_args)
         sys.exit(errno)
 
 
 setup(
-    name='pypug',
-    version='0.1.0',
+    name='pypugly',
+    version='0.2.0',
 
     author='Alexandre Andrade',
     author_email='kaniabi@gmail.com',
 
-    url='https://github.com/kaniabi/pypug',
+    url='https://github.com/zerotk/pypugly',
 
     description='Another HTML generator based on JADE.',
     long_description='''Another HTML generator based on JADE.''',
@@ -59,7 +59,7 @@ setup(
 
     include_package_data=True,
 
-    packages=['pypug'],
+    packages=['pypugly'],
 
     keywords=['jade', 'pyjade', 'html', 'generator'],
 

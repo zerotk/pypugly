@@ -1,6 +1,15 @@
 
 
-def create_tag(name, args, klass, id_):
+def create_tag(name, args=[], klass=[], id_=''):
+    """
+
+    Shortcut to create the contents of an open XML tag.
+    :param str name:
+    :param list(str) args:
+    :param list(str) klass:
+    :param str id_:
+    :return str:
+    """
     result = name
 
     # Convert args (list of Argument token) into a dictionary.

@@ -37,5 +37,5 @@ html(lang="en")
 You py.test to test it
 
 ```console
-$ PYTHONPATH=.:$PYTHONPATH py.test pypug
+$ PYTHONPATH=.:$PYTHONPATH py.test pypugly
 ```
