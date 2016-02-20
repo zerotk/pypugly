@@ -107,21 +107,28 @@ class Django(str):
     grammar = name(), attr('restline', restline)
 
 
-def parse_tag(text):
-    result = parse(text, Tag)
-    return result
+class PegParser(object):
+    """
+    This class implements the parser interface for PyPUGly.
+
+    Once the returning values are standardized one can implement the parser using another technology such as PLY.
+    """
+
+    def parse_tag(self, text):
+        result = parse(text, Tag)
+        return result
 
 
-def parse_code(text):
-    result = parse(text, [Def, ForLoop, Assignment])
-    return result
+    def parse_code(self, text):
+        result = parse(text, [Def, ForLoop, Assignment])
+        return result
 
 
-def parse_call(text):
-    result = parse(text, Call)
-    return result
+    def parse_call(self, text):
+        result = parse(text, Call)
+        return result
 
 
-def parse_django(text):
-    result = parse(text, Django)
-    return result
+    def parse_django(self, text):
+        result = parse(text, Django)
+        return result

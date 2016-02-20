@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, print_function
-from pypug import peg_parser
 from reraiseit import reraise
+
 from zerotk.tag import create_tag
 from ast import literal_eval
 
@@ -147,6 +147,9 @@ class HtmlGenerator(object):
         self.functions = {}
         self.variables = {}
 
+        from pypug.peg_parser import PegParser
+        self.__parser = PegParser()
+
     def handle_root(self, token, after, context):
         return []
 
@@ -154,7 +157,7 @@ class HtmlGenerator(object):
         if after:
             return []
 
-        code = peg_parser.parse_code(token.line)
+        code = self.__parser.parse_code(token.line)
         code_class = code.__class__.__name__
 
         if code_class == 'Assignment':
@@ -173,7 +176,7 @@ class HtmlGenerator(object):
             return []
 
         # Parse function call...
-        code = peg_parser.parse_call(token.line)
+        code = self.__parser.parse_call(token.line)
 
         # Obtain the associated function
         function = self.functions.get(str(code.name))
@@ -200,12 +203,12 @@ class HtmlGenerator(object):
         if after:
             if not token.children:
                 return []
-            code = peg_parser.parse_django(token.line)
+            code = self.__parser.parse_django(token.line)
             end_tag = code.name
             end_tag = '{% end' + end_tag.strip() + ' %}'
             return [token.indentation + end_tag]
         else:
-            code = peg_parser.parse_django(token.line)
+            code = self.__parser.parse_django(token.line)
             start_tag = code.name + ' ' + code.restline
             start_tag = '{% ' + start_tag.strip() + ' %}'
             return [token.indentation + start_tag]
@@ -223,7 +226,7 @@ class HtmlGenerator(object):
 
         # Parses the TAG line, extracting the id, classes, arguments and the contents.
         try:
-            tag = peg_parser.parse_tag(token.line)
+            tag = self.__parser.parse_tag(token.line)
         except Exception as e:
             reraise(e, 'While parsing tag in line %d' % token.line_no)
             raise
