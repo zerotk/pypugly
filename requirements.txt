@@ -1,4 +1,4 @@
 pytest
 pypeg2
-reraiseit
-easyfs
+zerotk.reraiseit
+zerotk.easyfs
