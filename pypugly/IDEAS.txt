@@ -1,0 +1,111 @@
+
+# Tags
+
+## HTML
+```html
+<html>
+  <head>
+    <title>Page Title</title>
+    <script tyle="text/javascript">
+      alert('This is a warning')
+    </script>
+  </head>
+  <body>
+    <h1>Title</h1>
+    <div class="body">
+      <div id="container">
+        <p>Paragraph</p>
+      </div>
+    </div>
+  </body>
+</html>
+```
+
+## Jade
+```
+doctype html
+html
+  head
+    title Page Title
+    meta(name="keywords", content="template language")
+    script(type='text/javascript').
+      alert('This is a warning!')
+body
+  h1 Title
+    .body
+      #container
+        p Paragraph
+```
+
+## Slim
+```
+doctype html
+html
+  head
+    title Page Title
+    meta name="keywords" content="template language"
+    javascript:
+      alert('This is a warning!')
+  body
+    h1 Title
+      .body
+        #container
+          p Paragraph
+```
+
+## HAML
+```
+%body
+  %h1 Title
+    .body
+      #container
+        p Paragraph
+```
+
+## navbar.lang
+  -module navbar
+
+    # Define variables
+    -var css
+        'alpha/bravo.css'
+
+    -var js
+        'alpha/bravo.js'
+
+    -block js-ready
+
+
+## base.lang
+
+  head
+    style
+      -for i in css
+        style(type='css', src=i)
+
+    script(type='javascript')
+      -for i in js
+        script(type='javascript', src=i)
+
+  # Block mechanism... define a place-holder for derived pages
+  -block alpha
+    h1 Alpha block
+
+
+## page.lang
+  -extends base.lang
+
+  # Comments start with '#"
+  # All code related lines are pressed by '-'
+  -import navbar.lang
+
+  # As in Jade, '.' means 'classes', '#' means id and 'div' can be omitted.
+  div.class#id
+    .class
+      #id
+
+  # Block mecanism... replaces the block content from base.lang
+  -block alpha
+    # Call the super-class block content
+    -super
+
+    p This is placed in block alpha.
