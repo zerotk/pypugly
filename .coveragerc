@@ -1,6 +1,6 @@
 [run]
 branch = True
-source = None
+source = pypugly
 
 [report]
 # Regexes for lines to exclude from consideration
