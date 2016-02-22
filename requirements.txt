@@ -2,3 +2,5 @@ pytest
 pypeg2
 zerotk.reraiseit
 zerotk.easyfs
+pytest
+coverage
