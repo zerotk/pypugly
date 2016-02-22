@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function
 from reraiseit import reraise
 
-from zerotk.tag import create_tag
+from pypugly.tag import create_tag
 from ast import literal_eval
 
 

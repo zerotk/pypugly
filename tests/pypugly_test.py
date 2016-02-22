@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, print_function
 import pytest
-from easyfs import CreateFile, GetFileContents
+from zerotk.easyfs import CreateFile, GetFileContents
 
 
 @pytest.mark.parametrize('basename', ['smoke_test', 'var', 'def', 'django'])
