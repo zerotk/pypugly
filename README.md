@@ -1,4 +1,8 @@
-# PyPUGly (temporary name) [![Build Status](https://travis-ci.org/zerotk/pypugly.svg)](https://travis-ci.org/zerotk/pypugly)
+[![PyPI](https://img.shields.io/pypi/v/pypugly.svg?style=flat-square)](https://pypi.python.org/pypi/pypugly)
+[![Travis](https://img.shields.io/travis/zerotk/pypugly.svg?style=flat-square)](https://travis-ci.org/zerotk/pypugly)
+[![Coveralls](https://img.shields.io/coveralls/zerotk/pypugly.svg?style=flat-square)](https://coveralls.io/github/zerotk/pypugly)
+
+# pypugly
 
 PuPUGly is an experiment to create the "perfect" HTML generation language and learn a little bit more about compilers.
 
@@ -37,5 +41,5 @@ html(lang="en")
 You py.test to test it
 
 ```console
-$ PYTHONPATH=.:$PYTHONPATH py.test pypugly
+$ PYTHONPATH=.:$PYTHONPATH py.test tests
 ```

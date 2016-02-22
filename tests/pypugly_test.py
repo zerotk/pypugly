@@ -13,7 +13,7 @@ def test_parser(embed_data, basename):
 
 
 def generate(filename):
-    from ._pypugly import PugParser, HtmlGenerator
+    from pypugly._pypugly import PugParser, HtmlGenerator
 
     parser = PugParser()
     input_contents = GetFileContents(filename)

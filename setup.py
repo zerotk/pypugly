@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='pypugly',
-    version='0.2.1',
+    use_scm_version=True,
 
     author='Alexandre Andrade',
     author_email='kaniabi@gmail.com',
@@ -26,7 +26,7 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
 
         # Pick your license as you wish (should match "license" above)
-        'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
+        'License :: OSI Approved :: MIT License',
 
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
@@ -38,17 +38,12 @@ setup(
 
     include_package_data=True,
 
-    packages=['pypugly', 'zerotk'],
+    packages=['None', 'pypugly'],
+    namespace_packages=['None'],
 
-    keywords=['jade', 'pyjade', 'html', 'generator'],
+    keywords=['generator', 'html', 'jade'],
 
-    install_requires=[
-        'pypeg2',
-        'zerotk.easyfs',
-        'zerotk.reraiseit',
-    ],
-    tests_require=[
-        'coverage',
-        'pytest',
-    ],
+    install_requires=['pypeg2', 'zerotk.easyfs'],
+    setup_requires=['setuptools_scm', 'pytest-runner'],
+    tests_require=['coverage', 'pytest'],
 )

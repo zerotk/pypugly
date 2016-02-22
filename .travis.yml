@@ -1,14 +1,19 @@
 language: python
-
 sudo: false
-
 python:
-- 2.7
-- 3.5
-
+  - 2.7
+  - 3.5
 script:
-- python setup.py develop
-- coverage run setup.py test
-
+  - pip install coveralls
+  - python setup.py develop
+  - coverage run setup.py test
 after_success:
-- coveralls
+  - coveralls
+deploy:
+  provider: pypi
+  user: Kaniabi
+  on:
+    tags: true
+    repository: zerotk/pypugly
+  password:
+    secure: x7c0tyOXlxY1K1tgLglWvTBFPWqa/TbskipPQbRu3ShvHKzYyTolWhyntMRCAi/cJsGWc7qShxk1rHCQ5mjRMPOXhNWCk6brkmcYcf9EciFZTB0HiGp3Lja8YRVa+NLYvHlUn4dQ+3I5RLTfdhdnmf7hXN7bMsePLOvkdwZC20awPG/vvOre6uksXZ/e2CHWS2HUHVWYx1TfynGN4Rit0WjzuIk4f1tb4fD6VS4acPXyKohHlg9yNmE1crS0XAaP6MpfaeKoDj4Ts9OGAVfXF+v4wyXHrdlmdO7rMvX8sryhQRVG3JQgsz4aVa+oRDUu9bRJ8W/rdt+0ceCq8ZL1zcdjO+c/vGAlfoOeTNujdk/xFILxpeYz82zor7AKhM6todpQjeVWfEFI6W1vC80c+Y32RsHI0TtqxUHnv8JHumz7TCKKJAAWX6Q7S29PVTwY0f+PNFJ3WhzFpaAVZCBq2V/lRrICWVholtH5HZv6UoKQc3mjCwwvZwm68Ms7juMPDYIufg1ihuveTOXzsauGImn3egedaSrh8M3KuJv5bYwskyR6c8Hv7IfNrg9WiGAm0bj4/8lfq9PAunNABRDE6HQVkpZWgjGuj5OyeV8bd7CaFpiMwf2Lpw05HLzILw6qmuc5KPfeLjXqLEL+iKamqcLHOVM2wHmAw/aS25CCbeA=

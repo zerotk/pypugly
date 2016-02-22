@@ -1,0 +1,4 @@
+%include included.html
+%csrf_token
+%for i in some_list
+    tr(class='{% cycle rowvalue1 rowvalue2 %}') '{{{{ i }}}}'

@@ -1,0 +1,16 @@
+name: pypugly
+module: pypugly
+namespace:
+path: zerotk/pypugly
+author: Alexandre Andrade
+author_email: kaniabi@gmail.com
+development_status: 3 - Alpha
+short_description: Another HTML generator based on JADE.
+long_description: Another HTML generator based on JADE.
+keywords:
+  - generator
+  - html
+  - jade
+install_requires:
+  - pypeg2
+  - zerotk.easyfs

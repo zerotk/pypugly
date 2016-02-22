@@ -1,6 +1,6 @@
-pytest
 pypeg2
-zerotk.reraiseit
 zerotk.easyfs
-pytest
+
+# Development
 coverage
+pytest

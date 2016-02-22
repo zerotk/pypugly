@@ -1,0 +1,12 @@
+html
+    head
+        script(language='text/javascript')
+    body.content#body
+        h1 'Title'
+        p 'First paragraph.'
+        div1.classy
+            div11
+                p
+        div2
+            p
+        h6 'Footer declaration.'
