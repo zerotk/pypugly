@@ -38,8 +38,7 @@ setup(
 
     include_package_data=True,
 
-    packages=['None', 'pypugly'],
-    namespace_packages=['None'],
+    packages=['pypugly'],
 
     keywords=['generator', 'html', 'jade'],
 
