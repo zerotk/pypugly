@@ -109,26 +109,53 @@ class PugParser(object):
 class Function(object):
 
     def __init__(self, name, parameters, code):
+        """
+
+        :param str name:
+            The function name.
+        :param list(tuple(str,str) parameters:
+            List of parameters names and default values.
+        :param ??? code:
+        :return:
+        """
         self.name = name
         self.parameters = parameters
         self.code = code
 
     def format_arguments(self, arguments):
         """
-        Returns a dictionary with the arguments. Obtain missing arguments names from the function parameter definition.
+        Returns a dictionary with the arguments. Obtain arguments names from
+        the function parameter.
 
+        It handles positional and keywords arguments. It also handles default
+        parameter values.
+
+        :param list result:
+            ?
         :return dict(str, object):
         """
-        result = {}
-        for i_parameter, i_argument in zip(self.parameters, arguments):
+        args = []
+        kwargs = {}
+        for i_argument in arguments:
             if isinstance(i_argument, tuple) and len(i_argument) == 2:
-                key = i_argument[0]
-                value = i_argument[1]
+                kwargs[i_argument[0]] = i_argument[1]
             else:
-                key = i_parameter[0]
-                value = i_argument or i_parameter[1]
-            value = literal_eval(value)
-            result[key] = value
+                args.append(i_argument)
+
+        result = {}
+        for i, (i_parameter_name, i_default_value) in enumerate(self.parameters):
+            try:
+                arg = kwargs[i_parameter_name]
+            except KeyError:
+                try:
+                    arg = args.pop(0)
+                except IndexError:
+                    if i_default_value is not None:
+                        arg = i_default_value
+                    else:
+                        arg = ''
+            result[i_parameter_name] = literal_eval(arg)
+
         return result
 
 
@@ -185,7 +212,8 @@ class HtmlGenerator(object):
         # Prepare arguments
         arguments = function.format_arguments(code.arguments)
 
-        # Prepare context for the function call, adding the global variables and argument values
+        # Prepare context for the function call, adding the global variables
+        # and argument values
         context = self.variables
         context.update(arguments)
 

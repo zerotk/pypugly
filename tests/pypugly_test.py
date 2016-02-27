@@ -3,7 +3,10 @@ import pytest
 from zerotk.easyfs import CreateFile, GetFileContents
 
 
-@pytest.mark.parametrize('basename', ['smoke_test', 'var', 'def', 'django'])
+@pytest.mark.parametrize(
+    'basename',
+    ['smoke_test', 'var', 'def', 'django', 'def-defaults']
+)
 def test_parser(embed_data, basename):
     input_filename = embed_data[basename + '.lang']
     obtained_filename = embed_data[basename + '.obtained.html']
@@ -13,6 +16,12 @@ def test_parser(embed_data, basename):
 
 
 def generate(filename):
+    """
+    Creates and HTML from the given PyPUGly filename.
+
+    :param str filename:
+    :return str:
+    """
     from pypugly._pypugly import PugParser, HtmlGenerator
 
     parser = PugParser()
@@ -20,3 +29,39 @@ def generate(filename):
     token_tree = parser.tokenize(input_contents)
     generator = HtmlGenerator()
     return generator.generate(token_tree)
+
+
+def test_format_arguments():
+    from pypugly._pypugly import Function
+    f = Function(
+        'alpha',
+        [('first', None), ('second', "'two'"), ('third', "'three'")],
+        None
+    )
+    assert (
+        f.format_arguments(
+            ["'alpha'", "'bravo'", "'charlie'"]
+        ) == {
+            'first': 'alpha',
+            'second': 'bravo',
+            'third': 'charlie',
+        }
+    )
+    assert (
+        f.format_arguments(
+            ["'alpha'"]
+        ) == {
+            'first': 'alpha',
+            'second': 'two',
+            'third': 'three',
+        }
+    )
+    assert (
+        f.format_arguments(
+            ["'FIRST'", ('third', "'333'")]
+        ) == {
+            'first': 'FIRST',
+            'second': 'two',
+            'third': '333',
+        }
+    )

@@ -1,0 +1,6 @@
+-def shortcut(name='Alpha', age=1)
+    p 'My name is {name} and I\'m {age} years old.'
+
++shortcut()
++shortcut('Bravo')
++shortcut('Bravo', 2)
