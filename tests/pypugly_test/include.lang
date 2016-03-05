@@ -1,2 +1,3 @@
 p 'This is in the main file.'
 -include 'included.ilang'
++included_def('alpha')
