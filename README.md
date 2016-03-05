@@ -1,6 +1,6 @@
-[![PyPI](https://img.shields.io/pypi/v/pypugly.svg?style=flat-square)](https://pypi.python.org/pypi/pypugly)
-[![Travis](https://img.shields.io/travis/zerotk/pypugly.svg?style=flat-square)](https://travis-ci.org/zerotk/pypugly)
-[![Coveralls](https://img.shields.io/coveralls/zerotk/pypugly.svg?style=flat-square)](https://coveralls.io/github/zerotk/pypugly)
+[![PyPI version](https://badge.fury.io/py/pypugly.svg)](https://badge.fury.io/py/pypugly)
+[![Build Status](https://travis-ci.org/zerotk/pypugly.svg?branch=master)](https://travis-ci.org/zerotk/pypugly)
+[![Coverage Status](https://coveralls.io/repos/github/zerotk/pypugly/badge.svg?branch=master)](https://coveralls.io/github/zerotk/pypugly?branch=master)
 
 # pypugly
 
