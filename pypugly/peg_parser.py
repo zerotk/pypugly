@@ -1,7 +1,6 @@
 from __future__ import unicode_literals, print_function
 from pypeg2 import *
 
-
 number = re.compile(r"\d+")
 symbol = re.compile(r"\w+")
 single_quote_string = re.compile(r"'((?:[^'\\]|\\')*)'")
@@ -43,7 +42,6 @@ class Def(object):
     @property
     def parameters(self):
         return [(i.key.name, getattr(i, 'value', None)) for i in self._parameters]
-
 
 
 class CallArgument(object):
@@ -107,6 +105,10 @@ class Django(str):
     grammar = name(), attr('restline', restline)
 
 
+class Include(object):
+    grammar = 'include', attr('filename', single_quote_string)
+
+
 class PegParser(object):
     """
     This class implements the parser interface for PyPUGly.
@@ -118,16 +120,13 @@ class PegParser(object):
         result = parse(text, Tag)
         return result
 
-
     def parse_code(self, text):
-        result = parse(text, [Def, ForLoop, Assignment])
+        result = parse(text, [Def, ForLoop, Assignment, Include])
         return result
-
 
     def parse_call(self, text):
         result = parse(text, Call)
         return result
-
 
     def parse_django(self, text):
         result = parse(text, Django)

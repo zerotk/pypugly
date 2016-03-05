@@ -1,4 +1,9 @@
 from __future__ import unicode_literals, print_function
+
+import os
+
+from zerotk.easyfs import GetFileContents, GetFileLines, IsFile
+from zerotk.easyfs._exceptions import FileNotFoundError
 from zerotk.reraiseit import reraise
 
 from pypugly.tag import create_tag
@@ -161,7 +166,7 @@ class Function(object):
 
 class HtmlGenerator(object):
 
-    def __init__(self):
+    def __init__(self, include_paths):
         self.HANDLERS = {
             LineToken.LINE_TYPE_ROOT: self.handle_root,
             LineToken.LINE_TYPE_COMMENT: self.handle_comment,
@@ -170,12 +175,41 @@ class HtmlGenerator(object):
             LineToken.LINE_TYPE_TAG: self.handle_tag,
             LineToken.LINE_TYPE_CALL: self.handle_call,
         }
-        # Code variables (for now, later it will be more complex... with IFs and FORs and expand_vars...
+        # Code variables (for now, later it will be more complex... with IFs
+        # and FORs and expand_vars...
         self.functions = {}
         self.variables = {}
+        self.include_paths = include_paths
 
         from pypugly.peg_parser import PegParser
         self.__parser = PegParser()
+
+    def generate(self, line_token):
+        """
+        Generates HTML from a line_token (tree).
+
+        :param LineToken line_token:
+        :return str:
+        """
+        lines = self._handle_line_token(line_token, self.variables)
+        return '\n'.join(lines)
+
+    def _handle_line_token(self, t, context):
+        handler = self.HANDLERS.get(t.line_type)
+        assert \
+            handler is not None, \
+            'No handler for token of type "{}"'.format(t.line_type)
+
+        result = handler(t, after=False, context=context)
+        result += self._handle_children(t.children, context=context)
+        result += handler(t, after=True, context=context)
+        return result
+
+    def _handle_children(self, children, context):
+        result = []
+        for i_child in children:
+            result += self._handle_line_token(i_child, context=context)
+        return result
 
     def handle_root(self, token, after, context):
         return []
@@ -193,6 +227,13 @@ class HtmlGenerator(object):
             self.functions[str(code.name)] = Function(code.name, code.parameters, token.children)
             token.children = []
             return []
+        elif code_class == 'Include':
+            filename = self._eval(code.filename)
+            parser = PugParser()
+            input_contents = GetFileContents(self._find_file(filename))
+            token_tree = parser.tokenize(input_contents)
+            return self._handle_line_token(token_tree, self.variables)
+
         elif code_class == 'ForLoop':
             return [token.indentation + repr(code)]
 
@@ -248,11 +289,8 @@ class HtmlGenerator(object):
 
     def handle_tag(self, token, after, context):
 
-        def get_content(tag):
-            result = literal_eval(tag.content)
-            return result.format(**self.variables)
-
-        # Parses the TAG line, extracting the id, classes, arguments and the contents.
+        # Parses the TAG line, extracting the id, classes, arguments and the
+        # contents.
         try:
             tag = self.__parser.parse_tag(token.line)
         except Exception as e:
@@ -269,7 +307,11 @@ class HtmlGenerator(object):
 
         if after:
             if not have_content and have_children:
-                result.append(token.indentation + '</{name}>'.format(name=tag.name))
+                result.append(
+                    token.indentation + '</{name}>'.format(
+                        name=tag.name
+                    )
+                )
         else:
             tag_text = create_tag(
                 tag.name,
@@ -286,28 +328,41 @@ class HtmlGenerator(object):
             if have_content:
                 # With content, close the tag in the same line.
                 end_tag = '</{}>'.format(tag.name)
-                content = get_content(tag)
+                content = self._eval(tag.content)
                 line += content + end_tag
 
             result.append(line)
 
         return result
 
-    def generate(self, line_token):
-        lines = self._handle_line_token(line_token, self.variables)
-        return '\n'.join(lines)
+    def _eval(self, literal):
+        result = literal_eval(literal)
+        return result.format(**self.variables)
 
-    def _handle_line_token(self, t, context):
-        handler = self.HANDLERS.get(t.line_type)
-        assert handler is not None, 'No handler for token of type "{}"'.format(t.line_type)
 
-        result = handler(t, after=False, context=context)
-        result += self._handle_children(t.children, context=context)
-        result += handler(t, after=True, context=context)
-        return result
+    def _find_file(self, filename):
+        filenames = []
+        for i_include_path in self.include_paths:
+            filenames.append(i_include_path + '/' + filename)
 
-    def _handle_children(self, children, context):
-        result = []
-        for i_child in children:
-            result += self._handle_line_token(i_child, context=context)
-        return result
+        for i_filename in filenames:
+            if IsFile(i_filename):
+                return i_filename
+
+        raise FileNotFoundError(filename)
+
+
+def generate(filename, include_paths=()):
+    """
+    Creates and HTML from the given PyPUGly filename.
+
+    :param str filename:
+    :return str:
+    """
+    from pypugly._pypugly import PugParser, HtmlGenerator
+
+    parser = PugParser()
+    input_contents = GetFileContents(filename)
+    token_tree = parser.tokenize(input_contents)
+    generator = HtmlGenerator([os.path.dirname(filename)] + list(include_paths))
+    return generator.generate(token_tree)

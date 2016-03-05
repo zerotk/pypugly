@@ -1,11 +1,20 @@
 from __future__ import unicode_literals, print_function
 import pytest
-from zerotk.easyfs import CreateFile, GetFileContents
+from zerotk.easyfs import CreateFile
+
+from pypugly._pypugly import generate
 
 
 @pytest.mark.parametrize(
     'basename',
-    ['smoke_test', 'var', 'def', 'django', 'def-defaults']
+    [
+        'smoke_test',
+        'var',
+        'def',
+        'django',
+        'def-defaults',
+        'include'
+    ]
 )
 def test_parser(embed_data, basename):
     input_filename = embed_data[basename + '.lang']
@@ -13,22 +22,6 @@ def test_parser(embed_data, basename):
     expected_filename = embed_data[basename + '.html']
     CreateFile(obtained_filename, generate(input_filename))
     embed_data.assert_equal_files(obtained_filename, expected_filename)
-
-
-def generate(filename):
-    """
-    Creates and HTML from the given PyPUGly filename.
-
-    :param str filename:
-    :return str:
-    """
-    from pypugly._pypugly import PugParser, HtmlGenerator
-
-    parser = PugParser()
-    input_contents = GetFileContents(filename)
-    token_tree = parser.tokenize(input_contents)
-    generator = HtmlGenerator()
-    return generator.generate(token_tree)
 
 
 def test_format_arguments():
