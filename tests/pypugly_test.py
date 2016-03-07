@@ -13,7 +13,9 @@ from pypugly._pypugly import generate
         'def',
         'django',
         'def-defaults',
-        'include'
+        'include',
+        'attrs',
+        'unicode',
     ]
 )
 def test_parser(embed_data, basename):

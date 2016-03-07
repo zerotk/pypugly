@@ -2,6 +2,7 @@ from __future__ import unicode_literals, print_function
 
 import os
 
+import six
 from zerotk.easyfs import GetFileContents, GetFileLines, IsFile
 from zerotk.easyfs._exceptions import FileNotFoundError
 from zerotk.reraiseit import reraise
@@ -200,9 +201,12 @@ class HtmlGenerator(object):
             handler is not None, \
             'No handler for token of type "{}"'.format(t.line_type)
 
-        result = handler(t, after=False, context=context)
-        result += self._handle_children(t.children, context=context)
-        result += handler(t, after=True, context=context)
+        try:
+            result = handler(t, after=False, context=context)
+            result += self._handle_children(t.children, context=context)
+            result += handler(t, after=True, context=context)
+        except Exception as e:
+            reraise(e, 'While handling line-token {}'.format(six.text_type(t)))
         return result
 
     def _handle_children(self, children, context):
@@ -222,9 +226,10 @@ class HtmlGenerator(object):
         code_class = code.__class__.__name__
 
         if code_class == 'Assignment':
-            self.variables[str(code.left)] = literal_eval(code.right)
+            self.variables[six.text_type(code.left)] = literal_eval(code.right)
         elif code_class == 'Def':
-            self.functions[str(code.name)] = Function(code.name, code.parameters, token.children)
+            self.functions[six.text_type(code.name)] = \
+                Function(code.name, code.parameters, token.children)
             token.children = []
             return []
         elif code_class == 'Include':
@@ -247,7 +252,7 @@ class HtmlGenerator(object):
         code = self.__parser.parse_call(token.line)
 
         # Obtain the associated function
-        function = self.functions.get(str(code.name))
+        function = self.functions.get(six.text_type(code.name))
         assert function is not None
 
         # Prepare arguments
@@ -285,7 +290,7 @@ class HtmlGenerator(object):
     def handle_comment(self, token, after, context):
         if after:
             return []
-        return [repr(token)]
+        return []
 
     def handle_tag(self, token, after, context):
 
@@ -313,9 +318,14 @@ class HtmlGenerator(object):
                     )
                 )
         else:
+            args = getattr(tag, 'args', [])
+            args = {
+                i.key: self._eval(getattr(i, 'value', 'True'))
+                for i in args
+            }
             tag_text = create_tag(
                 tag.name,
-                getattr(tag, 'args', []),
+                args,
                 klass=tag.classes,
                 id_=tag.id
             )
@@ -336,9 +346,24 @@ class HtmlGenerator(object):
         return result
 
     def _eval(self, literal):
-        result = literal_eval(literal)
-        return result.format(**self.variables)
+        """
+        Evaluates a literal.
 
+        For now, we evaluate only text (unicode) or boolean values
+        (True/False).
+
+        :param str literal:
+        :return object:
+        """
+        try:
+            result = literal_eval(literal)
+            if isinstance(result, bytes):
+                result = result.decode('UTF-8')
+            if isinstance(result, six.text_type):
+                result = result.format(**self.variables)
+            return result
+        except Exception as e:
+            reraise(e, 'While evaluation literal: "{}"'.format(literal))
 
     def _find_file(self, filename):
         filenames = []
@@ -357,6 +382,7 @@ def generate(filename, include_paths=()):
     Creates and HTML from the given PyPUGly filename.
 
     :param str filename:
+    :param list(str) include_paths:
     :return str:
     """
     from pypugly._pypugly import PugParser, HtmlGenerator

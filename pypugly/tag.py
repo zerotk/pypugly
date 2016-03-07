@@ -1,19 +1,21 @@
+from __future__ import unicode_literals
+import six
 
 
-def create_tag(name, args=[], klass=[], id_=''):
+def create_tag(name, args=None, klass=[], id_=''):
     """
 
     Shortcut to create the contents of an open XML tag.
     :param str name:
-    :param list(str) args:
+    :param dict(str:str) args:
     :param list(str) klass:
     :param str id_:
     :return str:
     """
     result = name
 
-    # Convert args (list of Argument token) into a dictionary.
-    args = {i.key: i.value for i in args}
+    if args is None:
+        args = {}
 
     # Add classes defined using dot syntax.
     if klass:
@@ -26,12 +28,19 @@ def create_tag(name, args=[], klass=[], id_=''):
 
     # Format tag arguments in alphabetical order.
     for i_name, i_value in sorted(args.items()):
+        # Name without value
+        if i_value is True:
+            result += ' {}'.format(i_name)
+            continue
+
+        # List values: join with spaces
         if isinstance(i_value, list):
             value = ' '.join(i_value)
         else:
             value = i_value
+
         # Quote value
-        if not (value.startswith("'") and value.endswith("'")):
+        if isinstance(value, six.text_type) and not (value.startswith("'") and value.endswith("'")):
             value = '"' + value + '"'
         result += ' {}={}'.format(i_name, value)
 
