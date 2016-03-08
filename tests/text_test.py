@@ -156,6 +156,8 @@ def test_dedent11():
 
 
 def test_indent():
+    assert indent('') == ''
+
     assert indent('alpha') == '    alpha'
 
     assert indent('alpha', indent=2) == '        alpha'

@@ -7,11 +7,17 @@ def create_tag(name, args=None, klass=[], id_=''):
 
     Shortcut to create the contents of an open XML tag.
     :param str name:
-    :param dict(str:str) args:
+    :param dict args:
     :param list(str) klass:
     :param str id_:
     :return str:
     """
+
+    def is_quoted(text):
+        return isinstance(text, six.text_type) and not (
+            value.startswith("'") and value.endswith("'")
+        )
+
     result = name
 
     if args is None:
@@ -40,7 +46,7 @@ def create_tag(name, args=None, klass=[], id_=''):
             value = i_value
 
         # Quote value
-        if isinstance(value, six.text_type) and not (value.startswith("'") and value.endswith("'")):
+        if is_quoted(value):
             value = '"' + value + '"'
         result += ' {}={}'.format(i_name, value)
 

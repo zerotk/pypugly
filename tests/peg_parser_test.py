@@ -50,6 +50,10 @@ def test_parse_tag():
     assert f.id == 'id1'
     assert len(f.args) == 0
 
+    f = parser.parse_tag("tag 'content'")
+    assert str(f) == '''tag ...'''
+    assert not hasattr(f, 'args')
+
 
 def test_parse_code():
     parser = PegParser()

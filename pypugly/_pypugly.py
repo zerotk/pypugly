@@ -3,13 +3,11 @@ from __future__ import unicode_literals, print_function
 import os
 
 import six
-from zerotk.easyfs import GetFileContents, GetFileLines, IsFile
-from zerotk.easyfs._exceptions import FileNotFoundError
+from zerotk.easyfs import GetFileContents, IsFile
 from zerotk.reraiseit import reraise
 
 from pypugly.tag import create_tag
 from ast import literal_eval
-
 
 
 class LineToken(object):
@@ -57,7 +55,11 @@ class LineToken(object):
         return indent, line_type, line
 
     def __repr__(self):
-        return '<{}:{} {}>'.format(self.__class__.__name__, self.line_type, self.line)
+        return '<{}:{} {}>'.format(
+            self.__class__.__name__,
+            self.line_type,
+            self.line
+        )
 
     @property
     def indentation(self):
@@ -98,7 +100,8 @@ class PugParser(object):
             # Handle token tree building.
             delta = token.indent - self.current_indent
             if delta > 0:
-                assert delta == 1, 'Single indents (%s chars) only.' % LineToken.INDENTATION
+                assert delta == 1, \
+                    'Single indents (%s chars) only.' % LineToken.INDENTATION
             elif delta < 0:
                 self.current_token.pop()
                 for i in range(-delta):
@@ -136,7 +139,7 @@ class Function(object):
         It handles positional and keywords arguments. It also handles default
         parameter values.
 
-        :param list result:
+        :param list arguments:
             ?
         :return dict(str, object):
         """
@@ -149,9 +152,9 @@ class Function(object):
                 args.append(i_argument)
 
         result = {}
-        for i, (i_parameter_name, i_default_value) in enumerate(self.parameters):
+        for i, (i_param_name, i_default_value) in enumerate(self.parameters):
             try:
-                arg = kwargs[i_parameter_name]
+                arg = kwargs[i_param_name]
             except KeyError:
                 try:
                     arg = args.pop(0)
@@ -160,7 +163,7 @@ class Function(object):
                         arg = i_default_value
                     else:
                         arg = ''
-            result[i_parameter_name] = literal_eval(arg)
+            result[i_param_name] = literal_eval(arg)
 
         return result
 
@@ -201,8 +204,9 @@ class HtmlGenerator(object):
             handler is not None, \
             'No handler for token of type "{}"'.format(t.line_type)
 
+        result = []
         try:
-            result = handler(t, after=False, context=context)
+            result += handler(t, after=False, context=context)
             result += self._handle_children(t.children, context=context)
             result += handler(t, after=True, context=context)
         except Exception as e:
@@ -366,6 +370,8 @@ class HtmlGenerator(object):
             reraise(e, 'While evaluation literal: "{}"'.format(literal))
 
     def _find_file(self, filename):
+        from zerotk.easyfs._exceptions import FileNotFoundError
+
         filenames = []
         for i_include_path in self.include_paths:
             filenames.append(i_include_path + '/' + filename)
@@ -385,10 +391,10 @@ def generate(filename, include_paths=()):
     :param list(str) include_paths:
     :return str:
     """
-    from pypugly._pypugly import PugParser, HtmlGenerator
-
     parser = PugParser()
     input_contents = GetFileContents(filename)
     token_tree = parser.tokenize(input_contents)
-    generator = HtmlGenerator([os.path.dirname(filename)] + list(include_paths))
+    generator = HtmlGenerator(
+        [os.path.dirname(filename)] + list(include_paths)
+    )
     return generator.generate(token_tree)
