@@ -9,3 +9,8 @@
 +shortcut('Charlie', 3)
 
 +shortcut(age=4, name='Delta')
+
+-def include_js(url)
+    script(src='{{{{ STATIC_URL }}}}js/{url}')
+
++include_js('included.js')

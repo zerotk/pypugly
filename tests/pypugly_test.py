@@ -26,6 +26,12 @@ def test_parser(embed_data, basename):
     embed_data.assert_equal_files(obtained_filename, expected_filename)
 
 
+def test_errors(embed_data):
+    with pytest.raises(IndentationError) as excpt:
+        generate(embed_data['error-indent.lang'])
+    assert str(excpt.value) == 'Indentation error at line 2.'
+
+
 def test_format_arguments():
     from pypugly._pypugly import Function
     f = Function(

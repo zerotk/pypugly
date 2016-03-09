@@ -39,9 +39,13 @@ class LineToken(object):
         if line == self.LINE_TYPE_ROOT:
             return 0, self.LINE_TYPE_ROOT, ''
 
-        indent = len(line)
+        full_len = len(line)
         line = line.lstrip()
-        indent = int((indent - len(line)) / self.INDENTATION)
+        content_len = len(line)
+        prefix_len = full_len - content_len
+        if prefix_len % self.INDENTATION:
+            raise IndentationError()
+        indent = int(prefix_len / self.INDENTATION)
 
         if not line:
             raise LineToken.EmptyToken
@@ -85,6 +89,10 @@ class PugParser(object):
                 line_token = LineToken(i_line)
                 line_token.line_no = i + 1
                 context.build_tree(line_token)
+            except IndentationError:
+                raise IndentationError(
+                    'Indentation error at line {}.'.format(i+1)
+                )
             except LineToken.EmptyToken:
                 pass
 
@@ -237,7 +245,7 @@ class HtmlGenerator(object):
             token.children = []
             return []
         elif code_class == 'Include':
-            filename = self._eval(code.filename)
+            filename = self._eval(code.filename, context)
             parser = PugParser()
             input_contents = GetFileContents(self._find_file(filename))
             token_tree = parser.tokenize(input_contents)
@@ -324,7 +332,7 @@ class HtmlGenerator(object):
         else:
             args = getattr(tag, 'args', [])
             args = {
-                i.key: self._eval(getattr(i, 'value', 'True'))
+                i.key: self._eval(getattr(i, 'value', 'True'), context)
                 for i in args
             }
             tag_text = create_tag(
@@ -342,14 +350,14 @@ class HtmlGenerator(object):
             if have_content:
                 # With content, close the tag in the same line.
                 end_tag = '</{}>'.format(tag.name)
-                content = self._eval(tag.content)
+                content = self._eval(tag.content, context)
                 line += content + end_tag
 
             result.append(line)
 
         return result
 
-    def _eval(self, literal):
+    def _eval(self, literal, context):
         """
         Evaluates a literal.
 
@@ -364,10 +372,16 @@ class HtmlGenerator(object):
             if isinstance(result, bytes):
                 result = result.decode('UTF-8')
             if isinstance(result, six.text_type):
-                result = result.format(**self.variables)
+                result = result.format(**context)
             return result
         except Exception as e:
-            reraise(e, 'While evaluation literal: "{}"'.format(literal))
+            reraise(
+                e,
+                'While evaluation literal: "{}" with context: {}'.format(
+                    literal,
+                    ', '.join(context.keys())
+                )
+            )
 
     def _find_file(self, filename):
         from zerotk.easyfs._exceptions import FileNotFoundError
