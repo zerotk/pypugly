@@ -1,0 +1,5 @@
+html
+    head
+        script(src='alpha.js')
+    body
+        h1 'Hello, world!'
