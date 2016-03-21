@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, print_function
 
-from pypugly.text import dedent
+from zerotk.text import dedent
 
 
 def test_django_integration(embed_data):

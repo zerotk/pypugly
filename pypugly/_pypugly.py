@@ -1,13 +1,13 @@
 from __future__ import unicode_literals, print_function
 
 import os
+from ast import literal_eval
 
 import six
 from zerotk.easyfs import GetFileContents, IsFile
 from zerotk.reraiseit import reraise
 
-from pypugly.tag import create_tag
-from ast import literal_eval
+from zerotk.tag import create_tag
 
 
 class LineToken(object):

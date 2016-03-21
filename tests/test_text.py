@@ -1,6 +1,7 @@
 # coding: UTF-8
 from __future__ import unicode_literals
-from pypugly.text import dedent, indent, safe_split, match_any, format_it
+
+from zerotk.text import dedent, indent, safe_split, match_any, format_it
 
 
 def test_dedent0():

@@ -1,6 +1,7 @@
 # coding: UTF-8
 from __future__ import unicode_literals
-from pypugly.tag import create_tag
+
+from zerotk.tag import create_tag
 
 
 def test_tag():
