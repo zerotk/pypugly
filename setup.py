@@ -38,7 +38,7 @@ setup(
 
     include_package_data=True,
 
-    packages=['pypugly'],
+    packages=['pypugly', 'zerotk'],
 
     keywords=['generator', 'html', 'jade'],
 
