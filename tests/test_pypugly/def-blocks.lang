@@ -1,0 +1,11 @@
+-def block_func(name, buttons)
+    h6 'My name is {name}.'
+    div.toolbar
+        +buttons()
+
++block_func('Alpha')
+
++block_func('Bravo')
+    -def buttons()
+        button 'Close'
+        button 'Save'

@@ -1,5 +1,6 @@
 pypeg2
 zerotk.easyfs
+zerotk.clikit
 django
 
 # Development

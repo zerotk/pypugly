@@ -11,6 +11,15 @@ from zerotk.tag import create_tag
 
 
 class LineToken(object):
+    """
+    Represents a line, including the line type.
+
+    This is actually a tree-node, with all children nodes stored in the
+    `children` attribute.
+
+    The PugParser (bellow) generates a LineToken (tree) structure from a file.
+    This structure is later processed for semantic details.
+    """
 
     class EmptyToken(RuntimeError):
         pass
@@ -76,6 +85,9 @@ class PugParser(object):
     DEDENT = '<<<'
 
     def tokenize(self, text):
+        """
+        Generates a LineToken structure from the given text.
+        """
 
         def preprocess_text(txt):
             return txt.replace('\t', '    ').replace('\r', '')
@@ -124,6 +136,9 @@ class PugParser(object):
 
 
 class Function(object):
+    """
+    Represents a function in the language.
+    """
 
     def __init__(self, name, parameters, code):
         """
@@ -177,6 +192,9 @@ class Function(object):
 
 
 class HtmlGenerator(object):
+    """
+    Generates a HTML output from a LikeToken structure.
+    """
 
     def __init__(self, include_paths):
         self.HANDLERS = {
@@ -250,7 +268,6 @@ class HtmlGenerator(object):
             input_contents = GetFileContents(self._find_file(filename))
             token_tree = parser.tokenize(input_contents)
             return self._handle_line_token(token_tree, self.variables)
-
         elif code_class == 'ForLoop':
             return [token.indentation + repr(code)]
 
@@ -265,7 +282,14 @@ class HtmlGenerator(object):
 
         # Obtain the associated function
         function = self.functions.get(six.text_type(code.name))
-        assert function is not None
+        if function is None:
+            raise RuntimeError(
+                'PYPUGLY ERROR: {}:{}: "{}" unknown function name.'.format(
+                    token.line_no,
+                    code.position_in_text[1],
+                    code.name
+                )
+            )
 
         # Prepare arguments
         arguments = function.format_arguments(code.arguments)
@@ -281,6 +305,9 @@ class HtmlGenerator(object):
         # Replaces the code indent with the function call indent.
         for i in tokens:
             i.indent -= 1
+
+        # IGNORES children elements of a CALL.
+        token.children = []
 
         return self._handle_children(tokens, context=context)
 

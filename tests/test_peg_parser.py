@@ -1,5 +1,6 @@
 from __future__ import unicode_literals, print_function
 from pypugly.peg_parser import PegParser
+from zerotk.text import dedent
 
 
 def test_parse_tag():
@@ -107,3 +108,27 @@ def test_parse_django():
     assert f.__class__.__name__ == 'Django'
     assert f.name == 'include'
     assert f.restline == 'alpha.html bravo charlie.html delta=object.pk'
+
+
+def test_parse_file():
+    parser = PegParser()
+
+    f = parser.parse_file(dedent(
+        """
+        html
+            head
+                title 'Test'
+            body
+                h1 'Title'
+                p 'Contents'
+        """
+    ))
+    obtained = [unicode(i) for i in f]
+    assert obtained == [
+        'html',
+        'head',
+        'title ...',
+        'body',
+        'h1 ...',
+        'p ...',
+    ]

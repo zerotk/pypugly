@@ -86,12 +86,12 @@ class Tag(List):
         attr('classes', maybe_some(('.', word))),
         attr('id', optional(('#', word))),
         optional('(', attr('args', Arguments), ')'),
-        attr('content', restline),
+        attr('content', optional(single_quote_string)),
         endl
     )
 
     def __repr__(self):
-        result = self.name
+        result = unicode(self.name)
         if self.classes:
             result += ''.join(['.{}'.format(i) for i in sorted(self.classes)])
         if self.id:
@@ -107,6 +107,10 @@ class Django(str):
 
 class Include(object):
     grammar = 'include', attr('filename', single_quote_string)
+
+
+class File(List):
+    grammar = some(Tag)
 
 
 class PegParser(object):
@@ -130,4 +134,8 @@ class PegParser(object):
 
     def parse_django(self, text):
         result = parse(text, Django)
+        return result
+
+    def parse_file(self, text):
+        result = parse(text, File)
         return result

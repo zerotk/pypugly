@@ -23,6 +23,7 @@ The syntax is inspired on PUG (aka JADE) until it is not. I'm trying to make the
 -def title(name):
   h1.title '{name}''
 
+!doctype html
 html(lang="en")
   head
     # All strings must be quoted. Only single-quotes are accepted (consistency).
@@ -31,7 +32,7 @@ html(lang="en")
     # Call a function like this:
     +title('PyPUGly')
 
-    #container
+    div#container
       p 'Strings must be quoted.'
 ```
 
@@ -42,4 +43,20 @@ You py.test to test it
 
 ```console
 $ PYTHONPATH=.:$PYTHONPATH py.test tests
+```
+
+## IDEA: super def
+
+```
+-def navbar(title, @buttons):
+  div.navbar
+    h6 '{title}'
+    -if @buttons
+      div.buttons
+        @buttons
+
++navbar('Hello, world!')
+  @buttons
+    button 'Cancel'
+    button.btn-primary 'Save'
 ```
